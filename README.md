@@ -74,7 +74,7 @@ To handle the class imbalance, a Stratified K-fold cross-validation was employed
 |---|---|---|---|---|---|---|
 | Linear Regression | 0.671 | 0.517 | 0.303 | 0.348 | — | — |
 | Ordinal Regression | — | 0.459 | — | — | 0.437 | — |
-| Random Forest | 0.589 | 0.412 | 0.463 | 0.5 | — | 0.461 |
+| Random Forest | 0.589 | 0.412 | 0.463 | 0.5 (±0.031) | — | 0.461 |
 | XGBoost | 0.601 | 0.390 | 0.441 | 0.478 | — | 0.507 |
 
 **Key findings:**
@@ -128,7 +128,7 @@ These results demonstrate that while tree-based ensemble models perform well und
 
 ## Feature Importance 
 
-Both Random Forest and XGBoost have 
+Both Random Forest and XGBoost have built-in feature importance scores. These rankings identify which features matter most to the model, but not how they actually affect predictions. 
 
 Alcohol and sulphates are the top ranked features in both models, with volatile acidity as a secondary contributor.
 
@@ -155,6 +155,7 @@ The consistency of the SHAP patterns across two different model families and imp
 
 ## Limitations 
 
+
 ---
 
 ## Reproducibility
@@ -167,7 +168,4 @@ All random operations use `random_state=123`. Dataset available from the [UCI ML
 pip install pandas numpy scikit-learn xgboost mord shap matplotlib seaborn statsmodels
 ```
 
----
-
-## Reference
 
