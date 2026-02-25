@@ -21,7 +21,7 @@ The dataset contains 1,599 red wine samples. Each sample is described by 11 chem
 
 ## Exploratory Data Analysis
 
-During initial data exploration, I observed that several features exhibit a meaningful right skew and contain notable outliers. This is particularly evident in [------]. I retained these outliers as they represent real variations in wine chemistry. Additionally, the tree-based models used are naturally robust to these distributions.
+During initial data exploration, I observed that several features exhibit a meaningful right skew and contain notable outliers. This is particularly evident in residual sugar, chlorides, sulphates, and sulphur dioxide. I retained these outliers as they represent real variations in wine chemistry. Additionally, the tree-based models used are naturally robust to these distributions.
 
 <img width="1229" height="917" alt="image" src="https://github.com/user-attachments/assets/7ae419be-7169-440c-b727-acd50466ef2b" />
 
@@ -50,8 +50,6 @@ Wine quality is measured on an ordered integer scale (3–8). Treating it as a p
 ### Preprocessing 
 
 StandardScaler was utilized within a Scikit-Learn Pipeline for the parametric models. This ensured that the scaling was fit exclusively on the training data during cross-validation, which prevented the risk of data leakage. Tree-based models (Random Forest, XGBoost) do not require scaling and were trained directly on raw features. 
-
-To handle the class imbalance, a Stratified K-fold cross-validation was employed to ensure that every fold contained a representation of the less common quality scores. The same stratification logic was applied to the train/test split via `stratify=y`.
 
 ### Validation 
 
@@ -95,69 +93,67 @@ To handle the class imbalance, a Stratified K-fold cross-validation was employed
 
 Both tree-based models were further evaluated using `RandomizedSearchCV` to determine whether default hyperparameters were already near-optimal. The Random Forest model saw a marginal improvement in cross-validation R², moving from 0.496 to 0.500 (+0.004). Similarly, the XGBoost model saw an improvement from a baseline R² of 0.459 to 0.478 (+0.019). 
 
-
-
 ---
 
 ## Robustness & Stress Testing
 
 ### Experimental Design
+To evaluate how these models might perform in a real world environment, I stress tested them with a controlled covariate shift. 
+The models were trained exclusively on low alcohol wines and were tested on high alcohol wines. Alcohol was chosen as the split variable because it is the most predictive feature, making it the most meaningful stress test for assessing model generalization. Both models showed a significant performance drop under this shift. 
 
-To test model robustness under a realistic covariate shift, models were retrained on wines with **alcohol ≤ median** and evaluated on wines with **alcohol > median**. Alcohol was selected as the split variable because it is the single most predictive feature across all models and importance methods — making it the most meaningful axis on which to stress-test generalization.
-
-> 📊 *Figure: Alcohol Distribution — Train vs. Test Under Shift*
+<img width="695" height="473" alt="image" src="https://github.com/user-attachments/assets/e92b20ab-2a86-4ace-810e-264e76be4d4e" />
 
 ### Target Drift Diagnostic
 
-Before interpreting shift performance, it is essential to check whether the quality distribution itself differs between groups — if it does, R² collapse may reflect **target drift** (a mismatch in the label distribution) rather than pure model fragility.
+The low alcohol training group has a mean quality of 5.324, compared to 5.983 in the high-alcohol test group, a difference of 0.659 points. This matters because the models were trained on a quality distribution they had limited exposure to during training. 
 
-The mean quality in the low-alcohol training group is **5.324**, compared to **5.983** in the high-alcohol test group. This ~0.66 point difference is meaningful: the models were asked to predict a quality range they had limited exposure to during training. The R² drop observed under the shift is therefore attributable to a combination of covariate shift *and* target drift — and should not be interpreted as model fragility alone.
+The resulting R² drop under the shift can be attributed to a combination of covariate shift and target drift, and shouldn't be interpreted as simply a failure of the model architecture
 
-> 📊 *Figure: Quality Distribution — Train vs. Test Under Shift (KDE)*
+<img width="695" height="396" alt="image" src="https://github.com/user-attachments/assets/08edff65-126e-4d44-a07a-3fcc15cd847c" />
 
 ### Results
 
 | Model | Original R² | Shifted R² | R² Drop |
 |---|---|---|---|
-| Random Forest | — | — | — |
-| XGBoost | — | — | — |
+| Random Forest | 0.462 | 0.002 | 0.461 |
+| XGBoost | 0.441 | -0.066 | 0.507 |
 
-Both models show substantial R² degradation under the shift. This is expected given alcohol's dominant predictive weight — when the alcohol distribution changes, the learned associations shift accordingly. In a production context, this would motivate periodic model retraining or recalibration as the underlying wine population evolves.
+Both models show substantial R² degradation under the shift. This is expected given alcohol's dominant predictive weight. When the alcohol distribution changes, the learned associations lose their relevance.
 
----
+The Random Forest R² entirely collapsed, dropping to just 0.002, and the XGBoost R² fell to below zero. An R² value of less than zero indicates performance worse than predicting the mean. Additionally, the Random Forest RMSE increased from 0.589 to 0.830, representing a 41% increase in out-of-sample prediction error.
 
-## Feature Importance & Interpretability
-
-### Built-in Feature Importance
-
-Both Random Forest (impurity-based) and XGBoost (information gain) provide native feature importance scores. **Alcohol and volatile acidity are the top-ranked features in both models**, with sulphates and sulphur dioxide as secondary contributors.
-
-> 📊 *Figure: Random Forest Feature Importance (bar chart)*
-> 📊 *Figure: XGBoost Feature Importance — Gain*
-
-### SHAP Analysis
-
-Built-in importance scores indicate *which* features matter but not *how* they affect predictions. SHAP (SHapley Additive exPlanations) values address this by decomposing each prediction into signed feature contributions.
-
-> 📊 *Figure: SHAP Summary Plot — Random Forest*
-> 📊 *Figure: SHAP Summary Plot — XGBoost*
-
-Key interpretive findings consistent across both models:
-- **Alcohol:** Strong positive effect — higher alcohol content pushes predicted quality up
-- **Volatile acidity:** Strong negative effect — higher volatile acidity (associated with vinegar notes) pulls quality down
-- **Sulphates:** Moderate positive effect
-
-The consistency of these findings across two different model families and two different importance methods strengthens confidence that these are genuine data patterns rather than modeling artifacts.
+These results demonstrate that while tree-based ensemble models perform well under IID assumptions, they are highly sensitive to structural shifts in the dominant predictive feature. This highlights that even with strong cross-validation performance, robustness is not guaranteed under distribution shift.
 
 ---
 
-## Limitations & Future Work
+## Feature Importance 
 
-- **Moderate predictive ceiling:** The best R² achieved is approximately 0.50. Quality ratings are assigned by human tasters and carry inherent subjectivity, creating irreducible noise that no model can overcome.
-- **Distribution shift conflates two effects:** The alcohol-split design introduces both covariate shift and target drift simultaneously. A cleaner robustness test would hold the quality distribution constant while shifting only the feature distribution.
-- **Single wine type:** The dataset contains only red wines. Whether these models generalize to white wine is untested and unlikely without retraining.
-- **Feature engineering:** No interaction terms, polynomial features, or domain-derived features were explored. Ratios like free/total sulfur dioxide or acid balance may carry additional signal.
-- **Classification framing:** Grouping quality scores into low (3–4), medium (5–6), and high (7–8) categories and applying classification models may yield better-calibrated predictions for rare scores.
+Both Random Forest and XGBoost have 
+
+Alcohol and sulphates are the top ranked features in both models, with volatile acidity as a secondary contributor.
+
+<img width="776" height="473" alt="image" src="https://github.com/user-attachments/assets/20009b73-2975-4f60-92dd-1cf11f557d2d" />
+
+<img width="673" height="457" alt="image" src="https://github.com/user-attachments/assets/07ce1640-8b2b-4a28-8176-6c220ebb9f5c" />
+
+## Interpretability
+
+SHAP (SHapley Additive exPlanations) values were computed for both ensemble models to better understand the contributions of each feature. 
+Across both Random Forest and XGBoost:
+- **Alcohol** showed the strongest positive effect, elevating the predicted quality
+- **Volatile Acidity** showed a strong negative effect
+- **Sulphates** had a moderate postive effect
+
+The consistency of the SHAP patterns across two different model families and importance methods strengthens confidence that these are genuine data patterns rather than modeling artifacts.
+
+<img width="753" height="588" alt="image" src="https://github.com/user-attachments/assets/8f278492-f9f9-44bd-ba76-abac671635f8" />
+
+<img width="753" height="588" alt="image" src="https://github.com/user-attachments/assets/a2dc5fec-774b-4084-9f99-a49ba09cc52e" />
+
+
+---
+
+## Limitations 
 
 ---
 
@@ -175,4 +171,3 @@ pip install pandas numpy scikit-learn xgboost mord shap matplotlib seaborn stats
 
 ## Reference
 
-P. Cortez, A. Cerdeira, F. Almeida, T. Matos and J. Reis. Modeling wine preferences by data mining from physicochemical properties. *Decision Support Systems*, 47(4):547–553, 2009.
