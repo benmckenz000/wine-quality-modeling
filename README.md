@@ -169,7 +169,19 @@ There is also an absence of feature engineering: No interaction terms or polynom
 All random operations use `random_state=123`. Dataset available from the [UCI ML Repository](https://archive.ics.uci.edu/ml/datasets/wine+quality).
 
 ```bash
+# Clone repository
+git clone https://github.com/benmckenz000/wine-quality-modeling.git
+cd wine-quality-modeling
+
+# Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate  # or venv\Scripts\activate on Windows
+
+# Install dependencies
 pip install -r requirements.txt
+
+# Run analysis script
+python wine_quality.py
 ```
 
 
