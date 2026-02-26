@@ -33,7 +33,7 @@ The correlation analysis shows that alcohol has the strongest positive relations
 
 ### Multicollinearity (VIF)
 
-Before splitting the data, Variance Inflation Factors (VIF) were calculated across all features to identify potential multicollinearity. To ensure accuracy of the diagnostics, I added a constant intercept to the design. The results showed elevated VIF scores for features like fixed acidity and density, which indicates that these variables are highly correlated. These dependencies suggest that linear regression coefficients should be interpreted cautiously, as the estimates will be unstable and standard errors will be inflated. For the ensemble models used later, multicollinearity is not a concern due to tree-based models splitting on individual features resulting in them being unaffected by linear dependencies among predictors. 
+Before splitting the data, Variance Inflation Factors (VIF) were calculated across all features to identify potential multicollinearity. To ensure accuracy of the diagnostics, I added a constant intercept to the design. The results showed elevated VIF scores for features like fixed acidity and density, which indicates that these variables are highly correlated. These dependencies suggest that linear regression coefficients should be interpreted cautiously, as the estimates will be unstable and standard errors will be inflated. For the ensemble models, multicollinearity is not a concern since tree-based models split on one feature at a time and are unaffected by linear dependencies among predictors. 
 
 ![Correlation Heatmap](images/correlation_heatmap.png)
 
@@ -68,7 +68,7 @@ To handle the class imbalance, a Stratified K-fold cross-validation was employed
 
 ### Performance Summary
 
-| Model | Test RMSE | Test MAE | Test R² | CV R² Mean | CV MAE Mean | R² Drop (Shift) |
+| Model | Test RMSE | Test MAE | Test $R^2$ | CV $R^2$ Mean | CV MAE Mean | $R^2$ Drop (Shift) |
 |---|---|---|---|---|---|---|
 | Linear Regression | 0.671 | 0.517 | 0.303 | 0.348 | — | — |
 | Ordinal Regression | — | 0.459 | — | — | 0.437 | — |
@@ -77,48 +77,47 @@ To handle the class imbalance, a Stratified K-fold cross-validation was employed
 
 **Key findings:**
 
-- *Linear Regression* achieves an R² of 0.348 in cross-validation and 0.303 on the hold-out test set. This confirms that while wine quality contains meaningful signal, it also contains a non-linear structure that a linear model cannot fully capture. The residuals versus fitted plot reveals clear bias and heteroscedasticity, which suggests systematic model misspecification.
+- *Linear Regression* achieves an $R^2$ of 0.348 in cross-validation and 0.303 on the hold-out test set. This confirms that while wine quality contains meaningful signal, it also contains a non-linear structure that a linear model cannot fully capture. The residuals versus fitted plot reveals clear bias and heteroscedasticity, which suggests systematic model misspecification.
 
 ![Residuals vs. Predicted Values](images/residuals_v_predictions.png)
 
-- *Ordinal Regression* achieves a lower Mean Absolute Error (MAE) than the standard linear model, suggesting it better respects the ordered distance between quality categories. Because this is a classification-based approach, R² isn't calculated. Instead, the analysis focuses on MAE as a better match for the target structure. 
+- *Ordinal Regression* achieves a lower Mean Absolute Error (MAE) than the standard linear model, suggesting it better respects the ordered distance between quality categories. Because this is a classification-based approach, $R^2$ is not calculated. Instead, the analysis focuses on MAE as a better match for the target structure. 
 
 ![Ordinal - Residuals vs. Predicted](images/ordinal_resid_vs_pred.png)
 
-- *Random Forest* outperforms linear models on all regression metrics, with a CV R² of 0.50 and a Test R² of 0.463, alongside the lowest RMSE (0.589). Cross-validation scores track closely with test scores, indicating no significant overfitting in the model.
+- *Random Forest* outperforms linear models on all regression metrics, with a CV $R^2$ of 0.50 and a Test $R^2$ of 0.463, alongside the lowest RMSE (0.589). Cross-validation scores track closely with test scores, indicating no significant overfitting in the model.
 
-- *XGBoost* achieves a slightly lower R² than Random Forest but produced a lower Test MAE of 0.390. This result implies that XGBoost predictions tend to land closer to true scores on average. The inclusion of L1 and L2 regularization maintains stable generalization, and a `max_depth` of 5 was chosen to balance model complexity against the risk of overfitting.
+- *XGBoost* achieves a slightly lower $R^2$ than Random Forest but produced a lower Test MAE of 0.390. This result implies that XGBoost predictions tend to land closer to true scores on average. The inclusion of L1 and L2 regularization maintains stable generalization, and a `max_depth` of 5 was chosen to balance model complexity against the risk of overfitting.
 
-Both tree-based models were further evaluated using `RandomizedSearchCV` to determine whether default hyperparameters were already near-optimal. The Random Forest model saw a marginal improvement in cross-validation R², moving from 0.496 to 0.500 (+0.004). Similarly, the XGBoost model saw an improvement from a baseline R² of 0.459 to 0.478 (+0.019). 
+Both tree-based models were further evaluated using `RandomizedSearchCV` to determine whether default hyperparameters were already near-optimal. The Random Forest model saw a marginal improvement in cross-validation $R^2$, moving from 0.496 to 0.500 (+0.004). Similarly, the XGBoost model saw an improvement from a baseline $R^2$ of 0.459 to 0.478 (+0.019). 
 
 ---
 
 ## Robustness & Stress Testing
 
 ### Experimental Design
-To evaluate how these models might perform in a real world environment, I stress tested them with a controlled covariate shift. 
-The models were trained exclusively on low alcohol wines and were tested on high alcohol wines. Alcohol was chosen as the split variable because it is the most predictive feature, making it the most meaningful stress test for assessing model generalization. Both models showed a significant performance drop under this shift. 
+To evaluate how these models might perform in a real world environment, I stress-tested them with a controlled covariate shift. The models were trained exclusively on low alcohol wines and were tested on high alcohol wines. Alcohol was chosen as the split variable because it is the most predictive feature, making it the most meaningful stress test for assessing model generalization. Both models showed a significant performance drop under this shift. 
 
 ![Alcohol Distribution Under Controlled Shift](images/alc_dist_shift.png)
 
 ### Target Drift Diagnostic
 
-The low alcohol training group has a mean quality of 5.324, compared to 5.983 in the high-alcohol test group, a difference of 0.659 points. This matters because the models were trained on a quality distribution they had limited exposure to during training. 
+The low alcohol training group has a mean quality of 5.324, compared to 5.983 in the high-alcohol test group, a difference of 0.659 points. This matters because the models were evaluated on a quality range they had limited exposure to when trained. 
 
-The resulting R² drop under the shift can be attributed to a combination of covariate shift and target drift, and should not be interpreted as simply a failure of the model architecture
+The resulting $R^2$ drop under the shift can be attributed to a combination of covariate shift and target drift, and should not be interpreted as simply a failure of the model architecture.
 
 ![Target Distribution Shift Check](images/target_dist_shift_check.png)
 
 ### Robustness Results
 
-| Model | Original R² | Shifted R² | R² Drop |
+| Model | Original $R^2$ | Shifted $R^2$ | $R^2$ Drop |
 |---|---|---|---|
 | Random Forest | 0.463 | 0.002 | 0.461 |
 | XGBoost | 0.441 | -0.066 | 0.507 |
 
-Both models show substantial R² degradation under the shift. This is expected given alcohol's dominant predictive weight. When the alcohol distribution changes, the learned associations lose their relevance.
+Both models show substantial $R^2$ degradation under the shift. This is expected given alcohol's dominant predictive weight. When the alcohol distribution changes, the learned associations lose their relevance.
 
-The Random Forest R² entirely collapsed, dropping to just 0.002, and the XGBoost R² fell to below zero. An R² value of less than zero indicates performance worse than predicting the mean. Additionally, the Random Forest RMSE increased from 0.589 to 0.830, representing a 41% increase in out-of-sample prediction error.
+The Random Forest $R^2$ entirely collapsed, dropping to just 0.002, and the XGBoost $R^2$ fell to below zero. An $R^2$ value of less than zero indicates performance worse than predicting the mean. Additionally, the Random Forest RMSE increased from 0.589 to 0.830, representing a 41% increase in out-of-sample prediction error.
 
 These results demonstrate that while tree-based ensemble models perform well under IID assumptions, they are highly sensitive to structural shifts in the dominant predictive feature. This highlights that even with strong cross-validation performance, robustness is not guaranteed under distribution shift.
 
@@ -152,7 +151,7 @@ The consistency of the SHAP patterns across two different model families and imp
 ## Limitations 
 Distribution shift conflates two effects. The alcohol split design simultaneously introduces both covariate shift and target drift. A cleaner robustness test, like resampling the high alcohol test set to match the original training quality distribution, would hold the quality distribution constant while only shifting the feature distribution.
 
-There is also a moderate predictive ceiling. The highest R² achieved is 0.50. Since the quality rankings are assigned based on human tasters, there is a level of inherent subjectivity, which creates a predictive error floor that a model cannot account for.
+There is also a moderate predictive ceiling. The highest $R^2$ achieved is 0.50. Since the quality rankings are assigned based on human tasters, there is a level of inherent subjectivity, which creates a predictive error floor that a model cannot account for.
 
 In this analysis, only red wine was evaluated. Without retraining, it cannot be determined if these models generalize well enough for white wines, which typically have different chemical profiles and acidity balances.
 
