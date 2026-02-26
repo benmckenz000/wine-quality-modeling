@@ -15,7 +15,7 @@ Predicting wine quality is complex because of the nature of the target variable.
 
 The dataset contains 1,599 red wine samples. Each sample is described by 11 chemical features including alcohol content, volatile acidity, and sulphates. A key challenge in this project was addressing the significant class imbalance. Most wines are rated as 5 or 6, while scores at the extremes (3, 4, 7, and 8) are sparsely represented. I accounted for this distribution explicitly in the preprocessing and validation section.
 
-<img width="699" height="396" alt="image" src="https://github.com/user-attachments/assets/ea67bfcb-42b1-41ab-b4aa-da4dbdce8cf3" />
+![Quality Scores Distribution](images/quality_scores_dist.png)
 
 ---
 
@@ -23,11 +23,10 @@ The dataset contains 1,599 red wine samples. Each sample is described by 11 chem
 
 During initial data exploration, I observed that several features exhibit a meaningful right skew and contain notable outliers. This is particularly evident in residual sugar, chlorides, sulphates, and sulphur dioxide. I retained these outliers as they represent real variations in wine chemistry. Additionally, the tree-based models used are naturally robust to these distributions.
 
-![Quality Scores Distribution](images/quality_scores_dist.png)
+![Feature Distribution](images/feature_dist.png)
 
 The correlation analysis shows that alcohol has the strongest postive relationship with quality. Conversely, volatile acidity has the strongest negative correlation. Also noted are moderate positive associations with citric acid and sulphates. 
 
-![Feature Distribution](images/feature_dist.png)
 
 ---
 
