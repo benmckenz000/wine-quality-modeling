@@ -27,7 +27,6 @@ During initial data exploration, I observed that several features exhibit a mean
 
 The correlation analysis shows that alcohol has the strongest postive relationship with quality. Conversely, volatile acidity has the strongest negative correlation. Also noted are moderate positive associations with citric acid and sulphates. 
 
-
 ---
 
 ## Statistical Diagnostics and Methodology
@@ -84,7 +83,7 @@ To handle the class imbalance, a Stratified K-fold cross-validation was employed
 
 - **Ordinal Regression** achieves a lower Mean Absolute Error (MAE) than the standard linear model, suggesting it better respects the ordered distance between quality categories. Because this is a classification-based approach, R² isn't calculated. Instead, the analysis focuses on MAE as a better match for the target structure. 
 
-![Ordinal - Residuals vs. Predicted](ordinal_resid_vs_pred.png)
+![Ordinal - Residuals vs. Predicted](images/ordinal_resid_vs_pred.png)
 
 - **Random Forest** outperforms linear models on all regression metrics, with an R² of 0.50 and the lowest RMSE (0.589). Cross-validation scores track closely with test scores, indicating no significant overfitting in the model.
 
@@ -133,7 +132,7 @@ Alcohol and sulphates are the top ranked features in both models, with volatile 
 
 ![RF Feature Importance](images/rf_feature_imp.png)
 
-![XGB Feature Importance](xgb_feature_imp.png)
+![XGB Feature Importance](images/xgb_feature_imp.png)
 
 ## Interpretability
 
