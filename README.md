@@ -144,10 +144,8 @@ Across both Random Forest and XGBoost:
 
 The consistency of the SHAP patterns across two different model families and importance methods strengthens confidence that these are genuine data patterns rather than modeling artifacts.
 
-<img width="753" height="588" alt="image" src="https://github.com/user-attachments/assets/8f278492-f9f9-44bd-ba76-abac671635f8" />
 ![RF SHAP Summary](images/rf_shap.png)
 
-<img width="753" height="588" alt="image" src="https://github.com/user-attachments/assets/a2dc5fec-774b-4084-9f99-a49ba09cc52e" />
 ![XGB SHAP Summary](images/xgb_shap.png)
 
 
