@@ -5,7 +5,7 @@ Exploratory analysis and predictive modeling of wine quality using linear, ordin
 
 This project investigates the relationship between the physicochemical properties of red wine and quality ratings using a combination of parametric statistical models and non-parametric machine learning methods. The primary goal of this analysis is to determine if measurable chemical attributes can reliably predict how a wine is rated by human testers.
 
-Predicting wine quality is complex because of the nature of the target variable. Quality scores are discrete, ordered integers that are heavily concentrated around scores 5 and 6. This distribution indicates that the data doesn't fit into a standard regression or classification framework. This analysis evaluates four modeling approaches suited to this structure, compares their performance using appropriate metrics, and stress-tests the two most strongest models with a controlled covariate shift to evaluate their predictive stability.
+Predicting wine quality is complex because of the nature of the target variable. Quality scores are discrete, ordered integers that are heavily concentrated around scores 5 and 6. This distribution suggests that the data fits poorly into standard frameworks, as regression often overlooks the discrete nature of the labels and classification discards the ordinal relationships. This analysis evaluates four modeling approaches suited to this structure, compares their performance using appropriate metrics, and stress-tests the two strongest models with a controlled covariate shift to evaluate their predictive stability.
 
 ---
 
@@ -25,7 +25,7 @@ During initial data exploration, I observed that several features exhibit a mean
 
 ![Feature Distribution](images/feature_dist.png)
 
-The correlation analysis shows that alcohol has the strongest postive relationship with quality. Conversely, volatile acidity has the strongest negative correlation. Also noted are moderate positive associations with citric acid and sulphates. 
+The correlation analysis shows that alcohol has the strongest positive relationship with quality. Conversely, volatile acidity has the strongest negative correlation. Also noted are moderate positive associations with citric acid and sulphates. 
 
 ---
 
@@ -39,7 +39,7 @@ Before splitting the data, Variance Inflation Factors (VIF) were calculated acro
 
 ### Modeling Ordinality
 
-Wine quality is measured on an ordered integer scale (3–8). Treating it as a purely continuous ignores its discrete structure, while treating it as unordered categories loses the established ranking. Ordinal Regression is included as a methodologically sound middle ground. By treating quality as a series of thresholds, this model aligns more closely with the ordered structure without forcing a continuous prediction.
+Wine quality is measured on an ordered integer scale (3–8). Treating it as a purely continuous distribution ignores its discrete structure, while treating it as unordered categories loses the established ranking. Ordinal Regression is included as a methodologically sound middle ground. By treating quality as a series of thresholds, this model aligns more closely with the ordered structure without forcing a continuous prediction.
 
 ---
 
@@ -73,7 +73,7 @@ To handle the class imbalance, a Stratified K-fold cross-validation was employed
 | Linear Regression | 0.671 | 0.517 | 0.303 | 0.348 | — | — |
 | Ordinal Regression | — | 0.459 | — | — | 0.437 | — |
 | Random Forest | 0.589 | 0.412 | 0.463 | 0.5 (±0.031) | — | 0.461 |
-| XGBoost | 0.601 | 0.390 | 0.441 | 0.478 | — | 0.507 |
+| XGBoost | 0.601 | 0.390 | 0.441 | 0.478 (±0.031) | — | 0.507 |
 
 **Key findings:**
 
@@ -105,7 +105,7 @@ The models were trained exclusively on low alcohol wines and were tested on high
 
 The low alcohol training group has a mean quality of 5.324, compared to 5.983 in the high-alcohol test group, a difference of 0.659 points. This matters because the models were trained on a quality distribution they had limited exposure to during training. 
 
-The resulting R² drop under the shift can be attributed to a combination of covariate shift and target drift, and shouldn't be interpreted as simply a failure of the model architecture
+The resulting R² drop under the shift can be attributed to a combination of covariate shift and target drift, and should not be interpreted as simply a failure of the model architecture
 
 ![Target Distribution Shift Check](images/target_dist_shift_check.png)
 
@@ -124,7 +124,7 @@ These results demonstrate that while tree-based ensemble models perform well und
 
 ---
 
-## Feature Importance 
+## Feature Importance & Interpretability
 
 Both Random Forest and XGBoost have built-in feature importance scores. These rankings identify which features matter most to the model, but not how they actually affect predictions. 
 
@@ -134,13 +134,11 @@ Alcohol and sulphates are the top ranked features in both models, with volatile 
 
 ![XGB Feature Importance](images/xgb_feature_imp.png)
 
-## Interpretability
-
 SHAP (SHapley Additive exPlanations) values were computed for both ensemble models to better understand the contributions of each feature. 
 Across both Random Forest and XGBoost:
 - *Alcohol* showed the strongest positive effect, elevating the predicted quality
 - *Volatile Acidity* showed a strong negative effect
-- *Sulphates* had a moderate postive effect
+- *Sulphates* had a moderate positive effect
 
 The consistency of the SHAP patterns across two different model families and importance methods strengthens confidence that these are genuine data patterns rather than modeling artifacts.
 
@@ -156,7 +154,7 @@ Distribution shift conflates two effects. The alcohol split design simultaneousl
 
 There is also a moderate predictive ceiling. The highest R² achieved is 0.50. Since the quality rankings are assigned based on human tasters, there is a level of inherent subjectivity, which creates a predictive error floor that a model cannot account for.
 
-In this analysis, only red wine was evaluated. Without retraining, it cannot be determined if these models generalize well enough for white wines, which typically contain have different chemical profiles and acidity balances.
+In this analysis, only red wine was evaluated. Without retraining, it cannot be determined if these models generalize well enough for white wines, which typically have different chemical profiles and acidity balances.
 
 There is also an absence of feature engineering: No interaction terms or polynomial features were examined. Ratios like the free-to-total sulfur dioxide ratio or the volatile-to-fixed acidity ratio could potentially capture chemical interactions that individual features do not. 
 
@@ -164,12 +162,14 @@ There is also an absence of feature engineering: No interaction terms or polynom
 
 ## Reproducibility
 
+**Environment:** Python 3.13.7
+
 **Libraries:** pandas, numpy, scikit-learn, xgboost, mord, shap, matplotlib, seaborn, statsmodels
 
 All random operations use `random_state=123`. Dataset available from the [UCI ML Repository](https://archive.ics.uci.edu/ml/datasets/wine+quality).
 
 ```bash
-pip install pandas numpy scikit-learn xgboost mord shap matplotlib seaborn statsmodels
+pip install -r requirements.txt
 ```
 
 
