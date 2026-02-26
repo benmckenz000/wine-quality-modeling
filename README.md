@@ -77,7 +77,7 @@ To handle the class imbalance, a Stratified K-fold cross-validation was employed
 
 **Key findings:**
 
-- **Linear Regression** achieves an R² of approximately 0.35 in cross-validation. This confirms that while wine quality contains meaningful signal, it also contains a non-linear structure that a linear model cannot fully capture. The residuals versus fitted plot reveals clear bias and heteroscedasticity, which suggests systematic model misspecification.
+- *Linear Regression* achieves an R² of approximately 0.35 in cross-validation. This confirms that while wine quality contains meaningful signal, it also contains a non-linear structure that a linear model cannot fully capture. The residuals versus fitted plot reveals clear bias and heteroscedasticity, which suggests systematic model misspecification.
 
 ![Residuals vs. Predicted Values](images/residuals_v_predictions.png)
 
@@ -85,9 +85,9 @@ To handle the class imbalance, a Stratified K-fold cross-validation was employed
 
 ![Ordinal - Residuals vs. Predicted](images/ordinal_resid_vs_pred.png)
 
-- **Random Forest** outperforms linear models on all regression metrics, with an R² of 0.50 and the lowest RMSE (0.589). Cross-validation scores track closely with test scores, indicating no significant overfitting in the model.
+- *Random Forest* outperforms linear models on all regression metrics, with an R² of 0.50 and the lowest RMSE (0.589). Cross-validation scores track closely with test scores, indicating no significant overfitting in the model.
 
-- **XGBoost** achieves a slightly lower R² than Random Forest but produced a lower Test MAE of 0.390. This result implies that XGBoost predictions tend to land closer to true scores on average. The inclusion of L1 and L2 regularization maintains stable generalization, and a `max_depth` of 5 was chosen to balance model complexity against the risk of overfitting.
+- *XGBoost* achieves a slightly lower R² than Random Forest but produced a lower Test MAE of 0.390. This result implies that XGBoost predictions tend to land closer to true scores on average. The inclusion of L1 and L2 regularization maintains stable generalization, and a `max_depth` of 5 was chosen to balance model complexity against the risk of overfitting.
 
 Both tree-based models were further evaluated using `RandomizedSearchCV` to determine whether default hyperparameters were already near-optimal. The Random Forest model saw a marginal improvement in cross-validation R², moving from 0.496 to 0.500 (+0.004). Similarly, the XGBoost model saw an improvement from a baseline R² of 0.459 to 0.478 (+0.019). 
 
@@ -138,9 +138,9 @@ Alcohol and sulphates are the top ranked features in both models, with volatile 
 
 SHAP (SHapley Additive exPlanations) values were computed for both ensemble models to better understand the contributions of each feature. 
 Across both Random Forest and XGBoost:
-- **Alcohol** showed the strongest positive effect, elevating the predicted quality
-- **Volatile Acidity** showed a strong negative effect
-- **Sulphates** had a moderate postive effect
+- *Alcohol* showed the strongest positive effect, elevating the predicted quality
+- *Volatile Acidity* showed a strong negative effect
+- *Sulphates* had a moderate postive effect
 
 The consistency of the SHAP patterns across two different model families and importance methods strengthens confidence that these are genuine data patterns rather than modeling artifacts.
 
@@ -152,7 +152,13 @@ The consistency of the SHAP patterns across two different model families and imp
 ---
 
 ## Limitations 
+Distribution shift conflates two effects. The alcohol split design simultaneously introduces both covariate shift and target drift. A cleaner robustness test, like resampling the high alcohol test set to match the original training quality distribution, would hold the quality distribution constant while only shifting the feature distribution.
 
+There is also a moderate predictive ceiling. The highest R² achieved is 0.50. Since the quality rankings are assigned based on human tasters, there is a level of inherent subjectivity, which creates a predictive error floor that a model cannot account for.
+
+In this analysis, only red wine was evaluated. Without retraining, it cannot be determined if these models generalize well enough for white wines, which typically contain have different chemical profiles and acidity balances.
+
+There is also an absence of feature engineering: No interaction terms or polynomial features were examined. Ratios like the free-to-total sulfur dioxide ratio or the volatile-to-fixed acidity ratio could potentially capture chemical interactions that individual features do not. 
 
 ---
 
