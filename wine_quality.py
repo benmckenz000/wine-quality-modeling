@@ -78,7 +78,7 @@ plt.title("Residuals vs Predicted Values - Linear Regression")
 plt.show()
 
 # Ordinal Regression
-# LogisticAT treats quality as an ordered category; CV scored on MAE rather than Rsquared
+# LogisticAT treats quality as ordered category. CV scored on MAE rather than Rsquared
 ord_pipeline = Pipeline([
     ("scaler", StandardScaler()),
     ("model", m.LogisticAT(alpha=1.0))
@@ -287,10 +287,10 @@ summary_df = pd.DataFrame({
         np.round(r2_score(y_test, xgb_tuned_preds), 3)
     ],
     "CV R² Mean": [
-        np.round(np.mean(lr_cv_scores), 3),
+         f"{np.mean(lr_cv_scores):.3f} (±{np.std(lr_cv_scores):.4f})",
         "-",
-        f"{np.mean(rf_tuned_cv_scores):.3f} (±{np.std(rf_tuned_cv_scores):.3f})",
-        f"{xgb_tuned_cv_mean:.3f} (±{xgb_tuned_cv_std:.3f})"
+        f"{np.mean(rf_tuned_cv_scores):.3f} (±{np.std(rf_tuned_cv_scores):.4f})",
+        f"{xgb_tuned_cv_mean:.3f} (±{xgb_tuned_cv_std:.4f})"
     ],
     "CV MAE Mean": [
         "-",
