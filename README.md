@@ -23,11 +23,11 @@ The dataset contains 1,599 red wine samples. Each sample is described by 11 chem
 
 During initial data exploration, I observed that several features exhibit a meaningful right skew and contain notable outliers. This is particularly evident in residual sugar, chlorides, sulphates, and sulphur dioxide. I retained these outliers as they represent real variations in wine chemistry. Additionally, the tree-based models used are naturally robust to these distributions.
 
-<img width="1229" height="917" alt="image" src="https://github.com/user-attachments/assets/7ae419be-7169-440c-b727-acd50466ef2b" />
+![Quality Scores Distribution](images/quality_scores_dist.png)
 
 The correlation analysis shows that alcohol has the strongest postive relationship with quality. Conversely, volatile acidity has the strongest negative correlation. Also noted are moderate positive associations with citric acid and sulphates. 
 
-<img width="1021" height="792" alt="image" src="https://github.com/user-attachments/assets/74381670-2184-407f-95f3-b2d84ca7ecb1" />
+![Feature Distribution](images/feature_dist.png)
 
 ---
 
@@ -37,7 +37,7 @@ The correlation analysis shows that alcohol has the strongest postive relationsh
 
 Before splitting the data, Variance Inflation Factors (VIF) were calculated across all features to identify potential multicollinearity. To ensure accuracy of the diagnostics, I added a constant intercept to the design. The results showed elevated VIF scores for features like fixed acidity and density, which indicates that these variables are highly correlated. These dependencies suggest that linear regression coefficents should be interpreted cautiously, as the estimates will be unstable and standard errors will be inflated. For the ensemble models used later, multicollinearity is not a concern due to tree-based models splitting on individual features resulting in them being unaffected by linear dependencies among predictors. 
 
-<img width="364" height="348" alt="image" src="https://github.com/user-attachments/assets/df9e0b4f-135d-4db5-abca-f67322d1f1f8" />
+![Correlation Heatmap](images/correlation_heatmap.png)
 
 ### Modeling Ordinality
 
@@ -81,11 +81,11 @@ To handle the class imbalance, a Stratified K-fold cross-validation was employed
 
 - **Linear Regression** achieves an R² of approximately 0.35 in cross-validation. This confirms that while wine quality contains meaningful signal, it also contains a non-linear structure that a linear model cannot fully capture. The residuals versus fitted plot reveals clear bias and heteroscedasticity, which suggests systematic model misspecification.
 
-<img width="691" height="473" alt="image" src="https://github.com/user-attachments/assets/4df38aad-a012-414e-9a58-e2642127a66e" />
+![Residuals vs. Predicted Values](images/residuals_v_predictions.png)
 
 - **Ordinal Regression** achieves a lower Mean Absolute Error (MAE) than the standard linear model, suggesting it better respects the ordered distance between quality categories. Because this is a classification-based approach, R² isn't calculated. Instead, the analysis focuses on MAE as a better match for the target structure. 
 
-<img width="691" height="473" alt="image" src="https://github.com/user-attachments/assets/9583f961-c5db-4174-a84b-84d35ed75e70" />
+![Ordinal - Residuals vs. Predicted](ordinal_resid_vs_pred.png)
 
 - **Random Forest** outperforms linear models on all regression metrics, with an R² of 0.50 and the lowest RMSE (0.589). Cross-validation scores track closely with test scores, indicating no significant overfitting in the model.
 
@@ -101,7 +101,7 @@ Both tree-based models were further evaluated using `RandomizedSearchCV` to dete
 To evaluate how these models might perform in a real world environment, I stress tested them with a controlled covariate shift. 
 The models were trained exclusively on low alcohol wines and were tested on high alcohol wines. Alcohol was chosen as the split variable because it is the most predictive feature, making it the most meaningful stress test for assessing model generalization. Both models showed a significant performance drop under this shift. 
 
-<img width="695" height="473" alt="image" src="https://github.com/user-attachments/assets/e92b20ab-2a86-4ace-810e-264e76be4d4e" />
+![Alcohol Distribution Under Controlled Shift](images/alc_dist_shift.png)
 
 ### Target Drift Diagnostic
 
@@ -109,7 +109,7 @@ The low alcohol training group has a mean quality of 5.324, compared to 5.983 in
 
 The resulting R² drop under the shift can be attributed to a combination of covariate shift and target drift, and shouldn't be interpreted as simply a failure of the model architecture
 
-<img width="695" height="396" alt="image" src="https://github.com/user-attachments/assets/08edff65-126e-4d44-a07a-3fcc15cd847c" />
+![Target Distribution Shift Check](images/target_dist_shift_check.png)
 
 ### Results
 
@@ -132,9 +132,9 @@ Both Random Forest and XGBoost have built-in feature importance scores. These ra
 
 Alcohol and sulphates are the top ranked features in both models, with volatile acidity as a secondary contributor.
 
-<img width="776" height="473" alt="image" src="https://github.com/user-attachments/assets/20009b73-2975-4f60-92dd-1cf11f557d2d" />
+![RF Feature Importance](images/rf_feature_imp.png)
 
-<img width="673" height="457" alt="image" src="https://github.com/user-attachments/assets/07ce1640-8b2b-4a28-8176-6c220ebb9f5c" />
+![XGB Feature Importance](xgb_feature_imp.png)
 
 ## Interpretability
 
@@ -147,8 +147,10 @@ Across both Random Forest and XGBoost:
 The consistency of the SHAP patterns across two different model families and importance methods strengthens confidence that these are genuine data patterns rather than modeling artifacts.
 
 <img width="753" height="588" alt="image" src="https://github.com/user-attachments/assets/8f278492-f9f9-44bd-ba76-abac671635f8" />
+![RF SHAP Summary](images/rf_shap.png)
 
 <img width="753" height="588" alt="image" src="https://github.com/user-attachments/assets/a2dc5fec-774b-4084-9f99-a49ba09cc52e" />
+![XGB SHAP Summary](images/xgb_shap.png)
 
 
 ---
@@ -160,7 +162,7 @@ The consistency of the SHAP patterns across two different model families and imp
 
 ## Reproducibility
 
-**Key libraries:** pandas, numpy, scikit-learn, xgboost, mord, shap, matplotlib, seaborn, statsmodels
+**Libraries:** pandas, numpy, scikit-learn, xgboost, mord, shap, matplotlib, seaborn, statsmodels
 
 All random operations use `random_state=123`. Dataset available from the [UCI ML Repository](https://archive.ics.uci.edu/ml/datasets/wine+quality).
 
