@@ -70,7 +70,7 @@ To handle the class imbalance, a Stratified K-fold cross-validation was employed
 
 | Model | Test RMSE | Test MAE | Test $R^2$ | CV $R^2$ Mean | CV MAE Mean | $R^2$ Drop (Shift) |
 |---|---|---|---|---|---|---|
-| Linear Regression | 0.671 | 0.517 | 0.303 | 0.348 | — | — |
+| Linear Regression | 0.671 | 0.517 | 0.303 | 0.348 (±0.0290) | — | — |
 | Ordinal Regression | — | 0.459 | — | — | 0.437 | — |
 | Random Forest | 0.589 | 0.412 | 0.463 | 0.5 (±0.0308) | — | 0.461 |
 | XGBoost | 0.601 | 0.390 | 0.441 | 0.478 (±0.0313) | — | 0.507 |
