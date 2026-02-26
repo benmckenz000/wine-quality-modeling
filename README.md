@@ -33,7 +33,7 @@ The correlation analysis shows that alcohol has the strongest positive relations
 
 ### Multicollinearity (VIF)
 
-Before splitting the data, Variance Inflation Factors (VIF) were calculated across all features to identify potential multicollinearity. To ensure accuracy of the diagnostics, I added a constant intercept to the design. The results showed elevated VIF scores for features like fixed acidity and density, which indicates that these variables are highly correlated. These dependencies suggest that linear regression coefficents should be interpreted cautiously, as the estimates will be unstable and standard errors will be inflated. For the ensemble models used later, multicollinearity is not a concern due to tree-based models splitting on individual features resulting in them being unaffected by linear dependencies among predictors. 
+Before splitting the data, Variance Inflation Factors (VIF) were calculated across all features to identify potential multicollinearity. To ensure accuracy of the diagnostics, I added a constant intercept to the design. The results showed elevated VIF scores for features like fixed acidity and density, which indicates that these variables are highly correlated. These dependencies suggest that linear regression coefficients should be interpreted cautiously, as the estimates will be unstable and standard errors will be inflated. For the ensemble models used later, multicollinearity is not a concern due to tree-based models splitting on individual features resulting in them being unaffected by linear dependencies among predictors. 
 
 ![Correlation Heatmap](images/correlation_heatmap.png)
 
@@ -72,12 +72,12 @@ To handle the class imbalance, a Stratified K-fold cross-validation was employed
 |---|---|---|---|---|---|---|
 | Linear Regression | 0.671 | 0.517 | 0.303 | 0.348 | — | — |
 | Ordinal Regression | — | 0.459 | — | — | 0.437 | — |
-| Random Forest | 0.589 | 0.412 | 0.463 | 0.5 (±0.031) | — | 0.461 |
-| XGBoost | 0.601 | 0.390 | 0.441 | 0.478 (±0.031) | — | 0.507 |
+| Random Forest | 0.589 | 0.412 | 0.463 | 0.5 (±0.0308) | — | 0.461 |
+| XGBoost | 0.601 | 0.390 | 0.441 | 0.478 (±0.0313) | — | 0.507 |
 
 **Key findings:**
 
-- *Linear Regression* achieves an R² of approximately 0.35 in cross-validation. This confirms that while wine quality contains meaningful signal, it also contains a non-linear structure that a linear model cannot fully capture. The residuals versus fitted plot reveals clear bias and heteroscedasticity, which suggests systematic model misspecification.
+- *Linear Regression* achieves an R² of 0.348 in cross-validation and 0.303 on the hold-out test set. This confirms that while wine quality contains meaningful signal, it also contains a non-linear structure that a linear model cannot fully capture. The residuals versus fitted plot reveals clear bias and heteroscedasticity, which suggests systematic model misspecification.
 
 ![Residuals vs. Predicted Values](images/residuals_v_predictions.png)
 
@@ -85,7 +85,7 @@ To handle the class imbalance, a Stratified K-fold cross-validation was employed
 
 ![Ordinal - Residuals vs. Predicted](images/ordinal_resid_vs_pred.png)
 
-- *Random Forest* outperforms linear models on all regression metrics, with an R² of 0.50 and the lowest RMSE (0.589). Cross-validation scores track closely with test scores, indicating no significant overfitting in the model.
+- *Random Forest* outperforms linear models on all regression metrics, with a CV R² of 0.50 and a Test R² of 0.463, alongside the lowest RMSE (0.589). Cross-validation scores track closely with test scores, indicating no significant overfitting in the model.
 
 - *XGBoost* achieves a slightly lower R² than Random Forest but produced a lower Test MAE of 0.390. This result implies that XGBoost predictions tend to land closer to true scores on average. The inclusion of L1 and L2 regularization maintains stable generalization, and a `max_depth` of 5 was chosen to balance model complexity against the risk of overfitting.
 
@@ -109,11 +109,11 @@ The resulting R² drop under the shift can be attributed to a combination of cov
 
 ![Target Distribution Shift Check](images/target_dist_shift_check.png)
 
-### Results
+### Robustness Results
 
 | Model | Original R² | Shifted R² | R² Drop |
 |---|---|---|---|
-| Random Forest | 0.462 | 0.002 | 0.461 |
+| Random Forest | 0.463 | 0.002 | 0.461 |
 | XGBoost | 0.441 | -0.066 | 0.507 |
 
 Both models show substantial R² degradation under the shift. This is expected given alcohol's dominant predictive weight. When the alcohol distribution changes, the learned associations lose their relevance.
@@ -175,7 +175,8 @@ cd wine-quality-modeling
 
 # Create and activate virtual environment
 python -m venv venv
-source venv/bin/activate  # or venv\Scripts\activate on Windows
+source venv/bin/activate
+# use venv\Scripts\activate on Windows
 
 # Install dependencies
 pip install -r requirements.txt
