@@ -81,7 +81,7 @@ To handle the class imbalance, a Stratified K-fold cross-validation was employed
 
 ![Residuals vs. Predicted Values](images/residuals_v_predictions.png)
 
-- **Ordinal Regression** achieves a lower Mean Absolute Error (MAE) than the standard linear model, suggesting it better respects the ordered distance between quality categories. Because this is a classification-based approach, R² isn't calculated. Instead, the analysis focuses on MAE as a better match for the target structure. 
+- *Ordinal Regression* achieves a lower Mean Absolute Error (MAE) than the standard linear model, suggesting it better respects the ordered distance between quality categories. Because this is a classification-based approach, R² isn't calculated. Instead, the analysis focuses on MAE as a better match for the target structure. 
 
 ![Ordinal - Residuals vs. Predicted](images/ordinal_resid_vs_pred.png)
 
